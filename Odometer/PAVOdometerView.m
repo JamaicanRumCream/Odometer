@@ -8,7 +8,7 @@
 
 #import "PAVOdometerView.h"
 
-#define KDefaultNumberOfDigits 10
+#define KDefaultNumberOfDigits 5
 #define KDefaultAnimationTime 3.0
 
 @interface PAVOdometerView ()
@@ -16,6 +16,7 @@
 @property (nonatomic, assign) BOOL countingUpwards;
 
 @property (nonatomic, strong) NSArray *dialNumbers;
+@property (nonatomic, assign) CGSize numberColumnSize;
 
 @end
 
@@ -42,16 +43,16 @@
     
     _startingNumber = startingNumber;
     _endingNumber = endingNumber;
-    _numberOfDigits = numberOfDigits > 0 ? numberOfDigits : KDefaultNumberOfDigits;
+    _numberOfDigits = KDefaultNumberOfDigits;
     _animationTime = animationTime ? : KDefaultAnimationTime;
     _numberColumnImage = numberColumnImage;
     _odometerFrameImage = odometerFrameImage;
     
     self.countingUpwards = endingNumber > startingNumber;
 
-    NSString *biggerNumberString = [NSString stringWithFormat:@"%ld", (endingNumber > startingNumber) ? endingNumber : startingNumber];
-    NSUInteger numberLength = biggerNumberString.length;
-    _numberOfDigits = numberOfDigits > numberLength ? numberOfDigits : numberLength;
+//    NSString *biggerNumberString = [NSString stringWithFormat:@"%ld", (endingNumber > startingNumber) ? endingNumber : startingNumber];
+//    NSUInteger numberLength = biggerNumberString.length;
+//    _numberOfDigits = numberOfDigits > numberLength ? numberOfDigits : numberLength;
     
     if (odometerFrameImage) {
         UIImageView *bezelImageView = [[UIImageView alloc] initWithImage:self.odometerFrameImage];
@@ -70,8 +71,11 @@
     //iterate on # of digits to make number column UIImageViews
     //set the size of the column views to be appropriate for the # of rows for view frame size
     NSMutableArray *setup = [NSMutableArray arrayWithCapacity:self.numberOfDigits];
+    
     CGFloat columnWidth = self.frame.size.width / (CGFloat)self.numberOfDigits;
     CGFloat columnHeight = columnWidth * 10.0;
+    self.numberColumnSize = CGSizeMake(columnWidth, columnHeight);
+    
     for (int i = 0; i < self.numberOfDigits; i++) {
         //set up the rows at indexes from 0 to X, with 0 on RIGHT as the 1's column
         CGFloat xOffset = self.frame.size.width - ((i + 1) * columnWidth);
@@ -83,15 +87,15 @@
     }
     
     //get the digit offset for the column
-    //adjust the frame origin for the # to display in the column
+    //adjust the frame position for the # to display in the column
     self.dialNumbers = (NSArray *)setup;
     NSArray *digitsArray = [self digitsForNumber:self.endingNumber reversed:YES];
     for (int i = 0; i < self.dialNumbers.count; i++) {
         UIImageView *aView = self.dialNumbers[i];
-        CGRect imageRect = aView.frame;
-        imageRect.origin.y = -1 * [(NSNumber *)digitsArray[i] floatValue] * [self calculateDigitHeight:aView];
-        [aView setFrame:imageRect];
         [self addSubview:aView];
+        //transform the view, don't change its actual frame origin
+        CGAffineTransform move = CGAffineTransformMakeTranslation(0, -0.1 * [(NSNumber *)digitsArray[i] floatValue] * self.numberColumnSize.height);
+        [aView setTransform:move];
     }
 }
 
