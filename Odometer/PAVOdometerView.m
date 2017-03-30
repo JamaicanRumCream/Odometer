@@ -79,6 +79,11 @@
     self.numberPattern = [UIColor colorWithPatternImage:resizedImage];
 }
 
+- (void)setupColumnsWithSmallImages:(NSUInteger)aNumber {
+    //save all small images in an array
+    // save giant images into an array so we can ref and delete the subviews later
+}
+
 - (void)createOdometerColumnsWithStartingNumber {
     //iterate on # of digits to make number column UIImageViews
     //set the size of the column views to be appropriate for the # of rows for view frame size
