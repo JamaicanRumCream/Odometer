@@ -30,7 +30,7 @@
 }
 
 - (IBAction)setup:(id)sender {
-    [self.odometerView setupOdometerWithStartingNumber:11111 endingNumber:11111 numberOfDigits:5 animationTime:10.0 numberColumnImage:[UIImage imageNamed:@"NumberColumn.png"] odometerFrameImage:nil];
+    [self.odometerView setupOdometerWithStartingNumber:11111 endingNumber:11111 animationTime:3.0 numberColumnImage:[UIImage imageNamed:@"NumberColumn.png"] odometerFrameImage:nil];
 }
 
 - (IBAction)animate:(id)sender {

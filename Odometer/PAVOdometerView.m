@@ -7,16 +7,25 @@
 //
 
 #import "PAVOdometerView.h"
+#import "UIImage+Additions.h"
+#import "NSString+Additions.h"
+
 
 #define KDefaultNumberOfDigits 5
 #define KDefaultAnimationTime 3.0
 
+
 @interface PAVOdometerView ()
 
-@property (nonatomic, assign) BOOL countingUpwards;
+/** Number of digits/columns to display
+ NOTE: This property will scale number columns as needed so the associated image assets
+ should be size appropriately to fit in the space allotted
+ */
+@property (nonatomic, assign) NSUInteger numberOfDigits;
 
 @property (nonatomic, strong) NSArray *dialNumbers;
 @property (nonatomic, assign) CGSize numberColumnSize;
+@property (nonatomic, strong) UIColor *numberPattern;
 
 @end
 
@@ -26,7 +35,7 @@
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        
+        _numberOfDigits = KDefaultNumberOfDigits;
     }
     return self;
 }
@@ -34,26 +43,20 @@
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        
+        _numberOfDigits = KDefaultNumberOfDigits;
     }
     return self;
 }
 
-- (void)setupOdometerWithStartingNumber:(NSUInteger)startingNumber endingNumber:(NSUInteger)endingNumber numberOfDigits:(NSUInteger)numberOfDigits animationTime:(CGFloat)animationTime numberColumnImage:(UIImage *)numberColumnImage odometerFrameImage:(UIImage *)odometerFrameImage {
+- (void)setupOdometerWithStartingNumber:(NSUInteger)startingNumber endingNumber:(NSUInteger)endingNumber animationTime:(CGFloat)animationTime numberColumnImage:(UIImage *)numberColumnImage odometerFrameImage:(UIImage *)odometerFrameImage {
     
     _startingNumber = startingNumber;
     _endingNumber = endingNumber;
-    _numberOfDigits = KDefaultNumberOfDigits;
     _animationTime = animationTime ? : KDefaultAnimationTime;
     _numberColumnImage = numberColumnImage;
     _odometerFrameImage = odometerFrameImage;
     
-    self.countingUpwards = endingNumber > startingNumber;
-
-//    NSString *biggerNumberString = [NSString stringWithFormat:@"%ld", (endingNumber > startingNumber) ? endingNumber : startingNumber];
-//    NSUInteger numberLength = biggerNumberString.length;
-//    _numberOfDigits = numberOfDigits > numberLength ? numberOfDigits : numberLength;
-    
+    // If an image is provided, add the image view into view
     if (odometerFrameImage) {
         UIImageView *bezelImageView = [[UIImageView alloc] initWithImage:self.odometerFrameImage];
         [bezelImageView setContentMode:UIViewContentModeScaleToFill];
@@ -64,7 +67,18 @@
         [self.bottomAnchor constraintEqualToAnchor:bezelImageView.bottomAnchor].active = YES;
     }
     
+    CGFloat columnWidth = self.frame.size.width / (CGFloat)self.numberOfDigits;
+    CGFloat columnHeight = columnWidth * 10.0;
+    self.numberColumnSize = CGSizeMake(columnWidth, columnHeight);
+    
     [self createOdometerColumnsWithStartingNumber];
+    [self createColumnPattern];
+}
+
+/** Creates the global number column color-pattern */
+- (void)createColumnPattern {
+    UIImage *resizedImage = [self.numberColumnImage scaleToSize:self.numberColumnSize];
+    self.numberPattern = [UIColor colorWithPatternImage:resizedImage];
 }
 
 - (void)createOdometerColumnsWithStartingNumber {
@@ -72,14 +86,10 @@
     //set the size of the column views to be appropriate for the # of rows for view frame size
     NSMutableArray *setup = [NSMutableArray arrayWithCapacity:self.numberOfDigits];
     
-    CGFloat columnWidth = self.frame.size.width / (CGFloat)self.numberOfDigits;
-    CGFloat columnHeight = columnWidth * 10.0;
-    self.numberColumnSize = CGSizeMake(columnWidth, columnHeight);
-    
     for (int i = 0; i < self.numberOfDigits; i++) {
         //set up the rows at indexes from 0 to X, with 0 on RIGHT as the 1's column
-        CGFloat xOffset = self.frame.size.width - ((i + 1) * columnWidth);
-        CGRect columnSize = CGRectMake(xOffset, 0, columnWidth, columnHeight);
+        CGFloat xOffset = self.frame.size.width - ((i + 1) * self.numberColumnSize.width);
+        CGRect columnSize = CGRectMake(xOffset, 0, self.numberColumnSize.width, self.numberColumnSize.height);
         UIImageView *columnView = [[UIImageView alloc] initWithFrame:columnSize];
         [columnView setContentMode:UIViewContentModeScaleToFill];
         [columnView setImage:self.numberColumnImage];
@@ -101,112 +111,72 @@
 
 - (void)animateToNewNumber:(NSUInteger)newNumber {
     self.endingNumber = newNumber;
-    [UIView animateKeyframesWithDuration:self.animationTime delay:0.0 options:UIViewKeyframeAnimationOptionCalculationModeLinear animations:^{
-
-        NSUInteger differential = self.endingNumber - self.startingNumber;
-        NSArray *digitsArray = [self digitsForNumber:differential reversed:YES];
-        NSArray *startDigits = [self digitsForNumber:self.startingNumber reversed:YES];
-        int j = (int)digitsArray.count;
+    if (self.startingNumber > self.endingNumber) { return; };
+    
+    NSUInteger differential = self.endingNumber - self.startingNumber;
+    NSString *differentialString = [self paddedNumberString:differential];
+    NSArray *startDigits = [self digitsForNumber:self.startingNumber reversed:YES];
+    
+    
+    NSMutableArray *giantColumnArray = [NSMutableArray arrayWithCapacity:self.numberOfDigits];
+    NSMutableString *addingDigitsString = @"".mutableCopy;
+    
+    // Make array of giant columns for every column
+    for (int i = 0; i < self.numberOfDigits; i++) {
         
-        for (int i = 0; i < 1; i++) {
+        // don't make any unnecessary columns for digits that don't change
+        if (![[differentialString substringWithRange:NSMakeRange(i, 1)] isEqualToString:@"0"]) {
+           
+            // Each subsequent digit column, from L to R, gets digits appended. Each digit power of 10 gets
+            // another number added in turn. So differential of (00123) -> 1, 12, 123.
+            // Amount to rotate is the number of revolutions a digit makes. The 1's column moves the entire
+            // amount of the differential, ie 123 digit moves for a 123 differential. 10's col moves 12.
+            [addingDigitsString appendString:[differentialString substringWithRange:NSMakeRange(i, 1)]];
+            NSUInteger amountToRotate = [addingDigitsString integerValue];
             
-            //start an animation from current offset to 9 (end)
-            CGFloat rounded = (CGFloat)differential / (10 ^ i);
-            NSString *stringTruncated = [NSString stringWithFormat:@"%.1f", rounded];
-            CGFloat truncated = [stringTruncated floatValue];
+            // Create a huge strip with a patterned number background. In order to avoid subclassing and using CGContextSetPatternPhase,
+            // just transform the initial position of the strip up a bit. This will require adding additional rows to total column height.
+            // This column always starts with 0 and ends at the final digit, ie for "2 rotating to 8" -> [0,1,2 ... 8]
+
+            // Add 1 more to include the final digit in the height
+            UIImageView *giantColumn = [[UIImageView alloc] initWithFrame:CGRectMake(self.numberColumnSize.width * i, 0, self.numberColumnSize.width, (1 + amountToRotate + [(NSNumber *)startDigits[i] integerValue]) * [self digitHeight])];
+            [giantColumn setBackgroundColor:self.numberPattern];
+            // keep a ref of the column image views
+            [giantColumnArray addObject:giantColumn];
             
-            CGFloat preCompleteRotatesOffset = (10.0 - [(NSNumber *)startDigits[i] floatValue]) / 10.0;
-            
-            CGFloat rotatesLessPreRotates = truncated - preCompleteRotatesOffset;
-            
-            CGFloat completeRotates = floorf(rotatesLessPreRotates);
-            
-            CGFloat afterCompleteRotatesOffset = [(NSNumber *)digitsArray[i] floatValue] / 10.0;
-            
-            
-            //add a keyframe to go from current value to 9
-            //add a keyframe to repeat X times
-            //add a keyframe to go from 0 to new offset
-            
-            //divide time into XXX segments based on differential number
-            //animationTime / differential = milliseconds per action
-            //multiply pre-action number * millis
-            //multiply repeating action * millis / 10
-            //multiply post action number * millis
-            
-            
-            //move counter from position to max
-            NSUInteger digit = [(NSNumber *)digitsArray[i] floatValue];
-            UIImageView *thisView = self.dialNumbers[i];
-            
-            [UIView addKeyframeWithRelativeStartTime:0.0 relativeDuration:0.1 animations:^{
-                UIImageView *aView = self.dialNumbers[i];
-                CGAffineTransform move = CGAffineTransformMakeTranslation(0, preCompleteRotatesOffset * -thisView.frame.size.height);
-                [aView setTransform:move];
-            }];
-            
-            [UIView addKeyframeWithRelativeStartTime:0.1 relativeDuration:0.0 animations:^{
-                UIImageView *aView = self.dialNumbers[i];
-                CGAffineTransform move = CGAffineTransformMakeTranslation(0, 0);
-                [aView setTransform:move];
-            }];
-            
-            [UIView addKeyframeWithRelativeStartTime:0.1 relativeDuration:0.8 animations:^{
-                UIImageView *aView = self.dialNumbers[i];
-                CGAffineTransform move = CGAffineTransformMakeTranslation(0, -thisView.frame.size.height);
-                [aView setTransform:move];
-            }];
-            
-            [UIView addKeyframeWithRelativeStartTime:0.9 relativeDuration:0.0 animations:^{
-                UIImageView *aView = self.dialNumbers[i];
-                CGAffineTransform move = CGAffineTransformMakeTranslation(0, 0);
-                [aView setTransform:move];
-            }];
-            
-            [UIView addKeyframeWithRelativeStartTime:0.9 relativeDuration:0.1 animations:^{
-                UIImageView *aView = self.dialNumbers[i];
-                CGAffineTransform move = CGAffineTransformMakeTranslation(0, afterCompleteRotatesOffset * -thisView.frame.size.height);
-                [aView setTransform:move];
-            }];
+            // add to the view, and adjust it's initial position to match the start number
+            [self addSubview:giantColumn];
+            CGAffineTransform move = CGAffineTransformMakeTranslation(0, -1.0 * [(NSNumber *)startDigits[i] floatValue] * [self digitHeight]);
+            [giantColumn setTransform:move];
+        }
+    }
+    
+    [UIView animateKeyframesWithDuration:self.animationTime delay:0.0 options:nil /*UIViewKeyframeAnimationOptionCalculationModeLinear*/ animations:^{
+        
+        for (UIImageView *aView in giantColumnArray) {
+            // Create the move so it moves the whole columnn is translated to bottom, minus the last digit height
+            CGAffineTransform move = CGAffineTransformMakeTranslation(0, -(aView.frame.size.height - [self digitHeight]));
+            [aView setTransform:move];
         }
         
-        
-        
-        
-        
-//            [UIView addKeyframeWithRelativeStartTime:0.0 relativeDuration:0.5 animations:^{
-//                UIImageView *aView = self.dialNumbers[0];
-//                CGAffineTransform move = CGAffineTransformMakeTranslation(0, -300);
-//                [aView setTransform:move];
-//            }];
-//            [UIView addKeyframeWithRelativeStartTime:0.5 relativeDuration:0.5 animations:^{
-//                UIImageView *aView = self.dialNumbers[0];
-//                CGAffineTransform move = CGAffineTransformMakeTranslation(0, 100);
-//                [aView setTransform:move];
-//            }];
-//            
-//            [UIView addKeyframeWithRelativeStartTime:0.2 relativeDuration:0.5 animations:^{
-//                UIImageView *aView = self.dialNumbers[1];
-//                CGAffineTransform move = CGAffineTransformMakeTranslation(0, 100);
-//                [aView setTransform:move];
-//            }];
-//            [UIView addKeyframeWithRelativeStartTime:0.7 relativeDuration:0.3 animations:^{
-//                UIImageView *aView = self.dialNumbers[1];
-//                CGAffineTransform move = CGAffineTransformMakeTranslation(0, 300);
-//                [aView setTransform:move];
-//            }];
 
-
+        
     } completion:^(BOOL finished) {
+        // Put some small column images back on?
+        // Set start number to end number?
         NSLog(@" transform done");
     }];
 }
 
+/** Puts leading 0's on a number as a string, with # of chars return to be the # of digits in display */
+- (NSString *)paddedNumberString:(NSUInteger)aNumber {
+    NSString *paddedNumber = [NSString stringWithFormat:@"%0*lu", KDefaultNumberOfDigits, (unsigned long)aNumber];
+    return paddedNumber;
+}
 
-
-
-- (CGFloat)calculateDigitHeight:(UIImageView *)numberColumnView {
-    return numberColumnView.frame.size.height * 0.1;
+/** Returns a float number of 1/10th of the digit column height */
+- (CGFloat)digitHeight {
+    return self.numberColumnSize.height * 0.1;
 }
 
 /** Return a single digit for the given number */
@@ -220,7 +190,7 @@
 - (NSArray *)digitsForNumber:(NSUInteger)aNumber reversed:(BOOL)reversed {
     NSString *numberString = [NSString stringWithFormat:@"%ld", aNumber];
     if (reversed) {
-        numberString = [self reverseString:numberString];
+        numberString = [numberString reversed];
     }
     NSMutableArray *digitArray = [NSMutableArray array];
     for (int i = 0; i < numberString.length; i++) {
@@ -228,15 +198,6 @@
         [digitArray addObject:@([digitString integerValue])];
     }
     return digitArray;
-}
-
-/** Reverses a given string */
-- (NSString *)reverseString:(NSString *)string {
-    NSString *reverseString = [NSString new];
-    for (NSInteger i = string.length - 1; i > -1; i--) {
-        reverseString = [reverseString stringByAppendingFormat:@"%c", [string characterAtIndex:i]];
-    }
-    return reverseString;
 }
 
 @end

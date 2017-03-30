@@ -21,12 +21,6 @@
 /** The number to scroll to, it could be less than the start number (differential can not be less than 0 */
 @property (nonatomic, assign) NSUInteger endingNumber;
 
-/** Number of digits/columns to display
- NOTE: This property will scale number columns as needed so the associated image assets
- should be size appropriately to fit in the space allotted
- */
-@property (nonatomic, assign) NSUInteger numberOfDigits;
-
 /** Number of seconds to do the animation */
 @property (nonatomic, assign) CGFloat animationTime;
 
@@ -35,7 +29,7 @@
 /** Image to surround the odometer bezel */
 @property (nonatomic, strong) UIImage *odometerFrameImage;
 
-- (void)setupOdometerWithStartingNumber:(NSUInteger)startingNumber endingNumber:(NSUInteger)endingNumber numberOfDigits:(NSUInteger)numberOfDigits animationTime:(CGFloat)animationTime numberColumnImage:(UIImage *)numberColumnImage odometerFrameImage:(UIImage *)odometerFrameImage;
+- (void)setupOdometerWithStartingNumber:(NSUInteger)startingNumber endingNumber:(NSUInteger)endingNumber animationTime:(CGFloat)animationTime numberColumnImage:(UIImage *)numberColumnImage odometerFrameImage:(UIImage *)odometerFrameImage;
 
 - (void)animateToNewNumber:(NSUInteger)newNumber;
 

@@ -15,6 +15,8 @@
 		35C6DB511E7EDC0C00FE133F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 35C6DB4F1E7EDC0C00FE133F /* LaunchScreen.storyboard */; };
 		35C6DB5A1E7EDC5700FE133F /* PAVOdometerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C6DB591E7EDC5700FE133F /* PAVOdometerView.m */; };
 		35C6DB5D1E7F149400FE133F /* NumberColumn.png in Resources */ = {isa = PBXBuildFile; fileRef = 35C6DB5C1E7F149400FE133F /* NumberColumn.png */; };
+		5F7FD2091E8D941000A7A318 /* NSString+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F7FD2081E8D941000A7A318 /* NSString+Additions.m */; };
+		5F9CD8851E8ACDA9007A57CC /* UIImage+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F9CD8841E8ACDA9007A57CC /* UIImage+Additions.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +33,10 @@
 		35C6DB581E7EDC5700FE133F /* PAVOdometerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PAVOdometerView.h; sourceTree = "<group>"; };
 		35C6DB591E7EDC5700FE133F /* PAVOdometerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PAVOdometerView.m; sourceTree = "<group>"; };
 		35C6DB5C1E7F149400FE133F /* NumberColumn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = NumberColumn.png; path = Graphics/NumberColumn.png; sourceTree = "<group>"; };
+		5F7FD2071E8D941000A7A318 /* NSString+Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Additions.h"; sourceTree = "<group>"; };
+		5F7FD2081E8D941000A7A318 /* NSString+Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Additions.m"; sourceTree = "<group>"; };
+		5F9CD8831E8ACDA9007A57CC /* UIImage+Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Additions.h"; sourceTree = "<group>"; };
+		5F9CD8841E8ACDA9007A57CC /* UIImage+Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Additions.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +81,10 @@
 				35C6DB4F1E7EDC0C00FE133F /* LaunchScreen.storyboard */,
 				35C6DB521E7EDC0C00FE133F /* Info.plist */,
 				35C6DB411E7EDC0C00FE133F /* Supporting Files */,
+				5F9CD8831E8ACDA9007A57CC /* UIImage+Additions.h */,
+				5F9CD8841E8ACDA9007A57CC /* UIImage+Additions.m */,
+				5F7FD2071E8D941000A7A318 /* NSString+Additions.h */,
+				5F7FD2081E8D941000A7A318 /* NSString+Additions.m */,
 			);
 			path = Odometer;
 			sourceTree = "<group>";
@@ -171,7 +181,9 @@
 				35C6DB491E7EDC0C00FE133F /* ViewController.m in Sources */,
 				35C6DB5A1E7EDC5700FE133F /* PAVOdometerView.m in Sources */,
 				35C6DB461E7EDC0C00FE133F /* AppDelegate.m in Sources */,
+				5F9CD8851E8ACDA9007A57CC /* UIImage+Additions.m in Sources */,
 				35C6DB431E7EDC0C00FE133F /* main.m in Sources */,
+				5F7FD2091E8D941000A7A318 /* NSString+Additions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,6 +340,7 @@
 				35C6DB571E7EDC0C00FE133F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
