@@ -29,8 +29,8 @@
 /** Image to surround the odometer bezel */
 @property (nonatomic, strong) UIImage *odometerFrameImage;
 
-- (void)setupOdometerWithStartingNumber:(NSUInteger)startingNumber endingNumber:(NSUInteger)endingNumber animationTime:(CGFloat)animationTime numberColumnImage:(UIImage *)numberColumnImage odometerFrameImage:(UIImage *)odometerFrameImage;
+- (void)setupOdometerWithStartingNumber:(NSUInteger)startingNumber numberColumnImage:(UIImage *)numberColumnImage odometerFrameImage:(UIImage *)odometerFrameImage;
 
-- (void)animateToNewNumber:(NSUInteger)newNumber;
+- (void)animateToNumber:(NSUInteger)newNumber animationTime:(CGFloat)animationTime;
 
 @end
