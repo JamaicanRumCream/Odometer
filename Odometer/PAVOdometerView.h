@@ -15,15 +15,6 @@
 
 @interface PAVOdometerView : UIView
 
-/** The initial number to start the odometer at when view is shown */
-@property (nonatomic, assign) NSUInteger startingNumber;
-
-/** The number to scroll to, it could be less than the start number (differential can not be less than 0 */
-@property (nonatomic, assign) NSUInteger endingNumber;
-
-/** Number of seconds to do the animation */
-@property (nonatomic, assign) CGFloat animationTime;
-
 /** Image for the display of the numbers in a column */
 @property (nonatomic, strong) UIImage *numberColumnImage;
 /** Image to surround the odometer bezel */
