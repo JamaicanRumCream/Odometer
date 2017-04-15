@@ -90,6 +90,7 @@
     self.numberPattern = [UIColor colorWithPatternImage:resizedImage];
 }
 
+/** Builds columns of number views in the main view */
 - (void)createStaticNumberColumns {
     NSMutableArray *setup = [NSMutableArray arrayWithCapacity:self.numberOfDigits];
     for (int i = 0; i < self.numberOfDigits; i++) {
@@ -125,46 +126,36 @@
     if (self.startingNumber >= newNumber) { return; };
     // Bail if it's going to go backwards
     
+    // The string of the new number with added 00s
     NSString *differentialString = [self paddedNumberString:newNumber - self.startingNumber];
     NSString *startDigitsString = [self paddedNumberString:self.startingNumber];
     NSString *endingDigitsString = [self paddedNumberString:newNumber];
+    // An amount that was rolled over from the last time through the loop
+    // IE a 10s column that needs to roll over the next higher value column
+    NSUInteger rolloverAmount = 0;
     
-    NSMutableString *addingDigitsString = @"".mutableCopy;
-    
-    // Make array of giant columns for every column
-    for (int i = 0; i < self.numberOfDigits; i++) {
+    // Loop through all columns from the 1s leftward to the 1000s column
+    for (int i = (int)self.numberOfDigits - 1; i > -1; i--) {
         
-        NSString *thisDifferentialDigit = [differentialString substringWithRange:NSMakeRange(i, 1)];
         NSString *thisEndingDigit = [endingDigitsString substringWithRange:NSMakeRange(i, 1)];
         NSString *thisStartDigit = [startDigitsString substringWithRange:NSMakeRange(i, 1)];
         
-        // Each subsequent digit column, from L to R, gets digits appended. Each digit power of 10 gets
-        // another number added in turn. So differential of (00123) -> 1, 12, 123.
-        // Amount to rotate is the number of revolutions a digit makes. The 1's column moves the entire
-        // amount of the differential, ie 123 digit moves for a 123 differential. 10's col moves 12.
-        [addingDigitsString appendString:[differentialString substringWithRange:NSMakeRange(i, 1)]];
-        NSUInteger amountToRotate = [addingDigitsString integerValue];
+        // Get number by chopping off the last digit
+        NSString  *diffDigitsUpToHereString = [differentialString substringToIndex:i + 1];
+        NSUInteger diffDigitsUpToHere = [diffDigitsUpToHereString integerValue] ;
         
-        // if difference is 0 and the next differential is enough to turn the current number-
-        // ie 9 + 3 going to 12, rotate THIS number +1
-        if ([thisDifferentialDigit isEqualToString:@"0"]) {
-            NSString *nextEndingDigit = [endingDigitsString substringWithRange:NSMakeRange(MIN(i + 1, self.numberOfDigits - 1), 1)];
-            NSString *nextStartDigit = [startDigitsString substringWithRange:NSMakeRange(MIN(i + 1, self.numberOfDigits - 1), 1)];
-            
-            if ([nextEndingDigit integerValue] < [nextStartDigit integerValue]) {
-                amountToRotate = 1;
-            }
+        // The amount to rotate this column
+        NSUInteger amountToRotate = diffDigitsUpToHere + rolloverAmount;
+        
+        // If the end is past 0, so end lower than start, OR
+        // the digits difference is less than the amount to rotate, ie 99 < 100
+        // where 1 is carried a few times for 10s or 100s
+        if ([thisEndingDigit integerValue] < [thisStartDigit integerValue] ||
+            [[NSString stringWithFormat:@"%ld", diffDigitsUpToHere] length] < [[NSString stringWithFormat:@"%ld", amountToRotate] length]) {
+            rolloverAmount = 1;
+        } else {
+            rolloverAmount = 0;
         }
-        
-        // if the previous difference was 0, but this digit is rolling over, add another
-        // one to this rotation
-        if ([thisEndingDigit integerValue] < [thisStartDigit integerValue]) {
-            if ([[differentialString substringWithRange:NSMakeRange(MAX(i - 1, 0), 1)] integerValue] == 0) {
-                amountToRotate += 1;
-            }
-        }
-        
-        
         
         // Create a huge strip with a patterned number background. In order to avoid subclassing and using CGContextSetPatternPhase,
         // just transform the initial position of the strip up a bit. This will require adding additional rows to total column height.
@@ -215,30 +206,4 @@
     return self.numberColumnSize.height * 0.1;
 }
 
-/** Return a single digit for the given number */
-- (NSUInteger)digitAtIndex:(int)index forNumber:(NSUInteger)aNumber {
-    NSString *numberString = [NSString stringWithFormat:@"%ld", aNumber];
-    NSString *digitString = [numberString substringWithRange:NSMakeRange(index, 1)];
-    return [digitString integerValue];
-}
-
-/** Returns the number as an array of strings */
-- (NSArray *)digitsForNumber:(NSUInteger)aNumber reversed:(BOOL)reversed {
-    NSString *numberString = [NSString stringWithFormat:@"%ld", aNumber];
-    if (reversed) {
-        numberString = [numberString reversed];
-    }
-    NSMutableArray *digitArray = [NSMutableArray array];
-    for (int i = 0; i < numberString.length; i++) {
-        NSString *digitString = [numberString substringWithRange:NSMakeRange(i, 1)];
-        [digitArray addObject:@([digitString integerValue])];
-    }
-    return digitArray;
-}
-
 @end
-
-
-
-
-
