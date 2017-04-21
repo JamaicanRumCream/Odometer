@@ -84,6 +84,7 @@
         [self.bottomAnchor constraintEqualToAnchor:bezelImageView.bottomAnchor].active = YES;
     }
     
+    // !! IMPORTANT LAYOUT NOTE  - This assumes each digit image is a perfect square
     CGFloat columnWidth = self.frame.size.width / (CGFloat)self.numberOfDigits;
     CGFloat columnHeight = columnWidth * 10.0;
     self.numberColumnSize = CGSizeMake(columnWidth, columnHeight);
