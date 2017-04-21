@@ -8,7 +8,6 @@
 
 #import "PAVOdometerView.h"
 #import "UIImage+Additions.h"
-#import "NSString+Additions.h"
 
 
 #define KNumberOfDigits 5
