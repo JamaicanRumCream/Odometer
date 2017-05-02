@@ -135,6 +135,10 @@
 }
 
 - (void)animateToNumber:(NSUInteger)newNumber animationTime:(CGFloat)animationTime {
+    [self animateToNumber:newNumber animationTime:animationTime identifier:nil];
+}
+
+- (void)animateToNumber:(NSUInteger)newNumber animationTime:(CGFloat)animationTime identifier:(NSString *)idenfifier {
     self.animationTime = animationTime;
     if (self.startingNumber >= newNumber) { return; };
     // Bail if it's going to go backwards
@@ -210,6 +214,10 @@
             [aView removeFromSuperview];
         }
         [self.rotatingDialNumberArray removeAllObjects];
+        
+        if (finished && [self.delegate respondsToSelector:@selector(pavOdometerView:didCompleteWithIdentifier:)]) {
+            [self.delegate pavOdometerView:self didCompleteWithIdentifier:idenfifier];
+        }
     }];
 }
 

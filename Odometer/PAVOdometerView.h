@@ -11,9 +11,20 @@
 // This is ONLY for analog style odometer, digital counting (ie no animation) not supported.
 
 #import <UIKit/UIKit.h>
+@class PAVOdometerView;
+
+
+@protocol pavOdometerViewDelegate <NSObject>
+
+@optional
+- (void)pavOdometerView:(PAVOdometerView *)odometerView didCompleteWithIdentifier:(NSString *)identifier;
+
+@end
 
 
 @interface PAVOdometerView : UIView
+
+@property (nonatomic, strong) id<pavOdometerViewDelegate> delegate;
 
 /** Image for the display of the numbers in a column */
 @property (nonatomic, strong) UIImage *numberColumnImage;
@@ -25,5 +36,8 @@
 
 /** Animates to the new number, as long as it is higher than current number */
 - (void)animateToNumber:(NSUInteger)newNumber animationTime:(CGFloat)animationTime;
+
+/** Animates to the new number, as long as it is higher than current number, and returns with the given identifier */
+- (void)animateToNumber:(NSUInteger)newNumber animationTime:(CGFloat)animationTime identifier:(NSString *)idenfifier;
 
 @end
